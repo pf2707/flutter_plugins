@@ -169,7 +169,7 @@ class MixWithOthersMessage {
 
 class PictureInPictureMessage {
   int textureId;
-  bool enabled;
+  int enabled;
   double left;
   double top;
   double width;

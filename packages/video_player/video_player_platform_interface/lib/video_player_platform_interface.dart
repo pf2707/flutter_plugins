@@ -287,6 +287,12 @@ enum VideoEventType {
 
   /// An unknown event has been received.
   unknown,
+
+  /// The video starting to picture in picture.
+  startingPiP,
+
+  /// The video stopped to picture in picture.
+  stoppedPiP,
 }
 
 /// Describes a discrete segment of time within a video using a [start] and
