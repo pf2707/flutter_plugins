@@ -211,6 +211,9 @@ static NSDictionary *wrapResult(NSDictionary *result, FlutterError *error) {
         result.textureId = nil;
     }
     result.enabled = dict[@"enabled"];
+    if ((NSNull *)result.enabled == [NSNull null]) {
+        result.enabled = 0;
+    }
     result.left = dict[@"left"];
     if ((NSNull *)result.left == [NSNull null]) {
         result.left = nil;

@@ -53,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FLTPictureInPictureMessage : NSObject
 @property(nonatomic, strong, nullable) NSNumber *textureId;
-@property(nonatomic) BOOL enabled;
+@property(nonatomic, strong, nullable) NSNumber *enabled;
 @property(nonatomic, strong, nullable) NSNumber *left;
 @property(nonatomic, strong, nullable) NSNumber *top;
 @property(nonatomic, strong, nullable) NSNumber *width;
