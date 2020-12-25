@@ -248,8 +248,6 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 
   [asset loadValuesAsynchronouslyForKeys:@[ @"tracks" ] completionHandler:assetCompletionHandler];
 
-    [self usePlayerLayer];
-
 
   return self;
 }
@@ -401,11 +399,9 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 
 - (void)setPictureInPicture:(BOOL)pictureInPicture
 {
-#if TARGET_OS_IOS
     if (self._pictureInPicture == pictureInPicture) {
         return;
     }
-
     self._pictureInPicture = pictureInPicture;
     if (@available(iOS 9.0, *)) {
         if (_pipController && self._pictureInPicture && ![_pipController isPictureInPictureActive]) {
@@ -419,7 +415,6 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
         } else {
             // Fallback on earlier versions
         } }
-#endif
 }
 
 //- (void)usePlayerLayer
@@ -429,7 +424,6 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 //    _playerLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
 //    _playerLayer.frame = self.bounds;
 //    _playerLayer.needsDisplayOnBoundsChange = YES;
-//
 //    // to prevent video from being animated when resizeMode is 'cover'
 //    // resize mode must be set before layer is added
 //    [self setResizeMode:_resizeMode];
@@ -464,29 +458,23 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     }
 }
 
-- (void)usePlayerLayer
+- (void)usePlayerLayer: (CGRect) frame
 {
     if( _player )
     {
         // Create new controller passing reference to the AVPlayerLayer
         self._playerLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
         UIViewController* vc = [[[UIApplication sharedApplication] keyWindow] rootViewController];
-        //self._playerLayer.frame = CGRectMake(0, 0, 250, 200);
-        //self._playerLayer.frame = _player.accessibilityFrame;
-        self._playerLayer.frame = CGRectMake(0, 0, _player.accessibilityFrame.size.width, _player.accessibilityFrame.size.height);
+        self._playerLayer.frame = frame;
         self._playerLayer.needsDisplayOnBoundsChange = YES;
-        //            [self._playerLayer addObserver:self forKeyPath:readyForDisplayKeyPath options:NSKeyValueObservingOptionNew context:nil];
+        //  [self._playerLayer addObserver:self forKeyPath:readyForDisplayKeyPath options:NSKeyValueObservingOptionNew context:nil];
         [vc.view.layer addSublayer:self._playerLayer];
         vc.view.layer.needsDisplayOnBoundsChange = YES;
-#if TARGET_OS_IOS
         [self setupPipController];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(4 * NSEC_PER_SEC)),
-                       dispatch_get_main_queue(), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)),
+        dispatch_get_main_queue(), ^{
             [self setPictureInPicture:true];
-                       });
-
-
-#endif
+       });
     }
 }
 
@@ -503,6 +491,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 //    _playerLayerObserverSet = NO;
 //  }
     self._playerLayer = nil;
+    self._pictureInPicture = false;
 }
 #endif
 
@@ -746,12 +735,13 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 - (void)seekTo:(FLTPositionMessage*)input error:(FlutterError**)error {
   FLTVideoPlayer* player = _players[input.textureId];
   [player seekTo:[input.position intValue]];
-  [player setPictureInPicture:true];
+  [player usePlayerLayer: CGRectMake(0, 0, 340, 290)];
 }
 
 - (void)pause:(FLTTextureMessage*)input error:(FlutterError**)error {
   FLTVideoPlayer* player = _players[input.textureId];
   [player pause];
+
 }
 
 - (void)setMixWithOthers:(FLTMixWithOthersMessage*)input
@@ -765,9 +755,15 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   }
 }
 
-- (void)setPictureInPicture:(FLTTextureMessage*)input error:(FlutterError**)error {
+- (void)setPictureInPicture:(FLTPictureInPictureMessage*)input error:(FlutterError**)error {
   FLTVideoPlayer* player = _players[input.textureId];
-  [player setPictureInPicture:true];
+    BOOL enabled = input.enabled;
+    if (enabled) {
+        [player usePlayerLayer: CGRectMake(input.left.floatValue, input.top.floatValue,
+                                           input.width.floatValue, input.height.floatValue)];
+    } else {
+        [player removePlayerLayer];
+    }
 }
 
 

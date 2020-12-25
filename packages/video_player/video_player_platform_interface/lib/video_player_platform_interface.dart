@@ -7,7 +7,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:meta/meta.dart' show visibleForTesting;
+import 'package:meta/meta.dart' show required, visibleForTesting;
 
 import 'method_channel_video_player.dart';
 
@@ -118,6 +118,12 @@ abstract class VideoPlayerPlatform {
   /// Sets the audio mode to mix with other sources
   Future<void> setMixWithOthers(bool mixWithOthers) {
     throw UnimplementedError('setMixWithOthers() has not been implemented.');
+  }
+
+  /// Sets the setPictureInPictureVideo.
+  Future<void> setPictureInPicture(int textureId, bool enabled, double left, double top, double width, double
+  height) {
+    throw UnimplementedError('setPictureInPictureVideo() has not been implemented.');
   }
 
   // This method makes sure that VideoPlayer isn't implemented with `implements`.
@@ -333,10 +339,10 @@ class DurationRange {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is DurationRange &&
-          runtimeType == other.runtimeType &&
-          start == other.start &&
-          end == other.end;
+          other is DurationRange &&
+              runtimeType == other.runtimeType &&
+              start == other.start &&
+              end == other.end;
 
   @override
   int get hashCode => start.hashCode ^ end.hashCode;

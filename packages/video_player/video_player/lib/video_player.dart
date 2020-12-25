@@ -425,6 +425,13 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     await _videoPlayerPlatform.setVolume(_textureId, value.volume);
   }
 
+  Future<void> _setPictureInPicture(bool enabled, double left, double top, double width, double height) async {
+    if (!value.initialized || _isDisposed) {
+      return;
+    }
+    await _videoPlayerPlatform.setPictureInPicture(_textureId, enabled, left, top, width, height);
+  }
+
   Future<void> _applyPlaybackSpeed() async {
     if (!value.initialized || _isDisposed) {
       return;
@@ -535,6 +542,10 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   void _updatePosition(Duration position) {
     value = value.copyWith(position: position);
     value = value.copyWith(caption: _getCaptionAt(position));
+  }
+
+  Future<void> setPIP(bool enabled, double left, double top, double width, double height) async {
+    await _setPictureInPicture(enabled, left, top, width, height);
   }
 }
 

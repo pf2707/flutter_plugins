@@ -22,7 +22,8 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
 
   @override
   Future<void> dispose(int textureId) {
-    return _api.dispose(TextureMessage()..textureId = textureId);
+    return _api.dispose(TextureMessage()
+      ..textureId = textureId);
   }
 
   @override
@@ -56,12 +57,14 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
 
   @override
   Future<void> play(int textureId) {
-    return _api.play(TextureMessage()..textureId = textureId);
+    return _api.play(TextureMessage()
+      ..textureId = textureId);
   }
 
   @override
   Future<void> pause(int textureId) {
-    return _api.pause(TextureMessage()..textureId = textureId);
+    return _api.pause(TextureMessage()
+      ..textureId = textureId);
   }
 
   @override
@@ -90,7 +93,8 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
   @override
   Future<Duration> getPosition(int textureId) async {
     PositionMessage response =
-        await _api.position(TextureMessage()..textureId = textureId);
+    await _api.position(TextureMessage()
+      ..textureId = textureId);
     return Duration(milliseconds: response.position);
   }
 
@@ -137,8 +141,20 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
   @override
   Future<void> setMixWithOthers(bool mixWithOthers) {
     return _api.setMixWithOthers(
-      MixWithOthersMessage()..mixWithOthers = mixWithOthers,
+      MixWithOthersMessage()
+        ..mixWithOthers = mixWithOthers,
     );
+  }
+
+  @override
+  Future<void> setPictureInPicture(int textureId, bool enabled, double left, double top, double width, double height) {
+    return _api.setPictureInPicture(PictureInPictureMessage()
+      ..textureId = textureId
+      ..enabled = enabled
+      ..left = left
+      ..top = top
+      ..width = width
+      ..height = height);
   }
 
   EventChannel _eventChannelFor(int textureId) {
@@ -146,7 +162,7 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
   }
 
   static const Map<VideoFormat, String> _videoFormatStringMap =
-      <VideoFormat, String>{
+  <VideoFormat, String>{
     VideoFormat.ss: 'ss',
     VideoFormat.hls: 'hls',
     VideoFormat.dash: 'dash',
