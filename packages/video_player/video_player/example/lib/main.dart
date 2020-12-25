@@ -108,7 +108,7 @@ class _ButterFlyAssetVideoInList extends StatelessWidget {
 
 /// A filler card to show the video in a list of scrolling contents.
 class _ExampleCard extends StatelessWidget {
-  const _ExampleCard({Key? key, required this.title}) : super(key: key);
+  const _ExampleCard({Key key, @required this.title}) : super(key: key);
 
   final String title;
 
@@ -150,7 +150,7 @@ class _ButterFlyAssetVideo extends StatefulWidget {
 }
 
 class _ButterFlyAssetVideoState extends State<_ButterFlyAssetVideo> {
-  late VideoPlayerController _controller;
+  VideoPlayerController _controller;
 
   @override
   void initState() {
@@ -206,7 +206,7 @@ class _BumbleBeeRemoteVideo extends StatefulWidget {
 }
 
 class _BumbleBeeRemoteVideoState extends State<_BumbleBeeRemoteVideo> {
-  late VideoPlayerController _controller;
+  VideoPlayerController _controller;
 
   Future<ClosedCaptionFile> _loadCaptions() async {
     final String fileContents = await DefaultAssetBundle.of(context)
@@ -265,7 +265,7 @@ class _BumbleBeeRemoteVideoState extends State<_BumbleBeeRemoteVideo> {
 }
 
 class _ControlsOverlay extends StatelessWidget {
-  const _ControlsOverlay({Key? key, required this.controller})
+  const _ControlsOverlay({Key key, @required this.controller})
       : super(key: key);
 
   static const _examplePlaybackRates = [
@@ -346,7 +346,7 @@ class _PlayerVideoAndPopPage extends StatefulWidget {
 }
 
 class _PlayerVideoAndPopPageState extends State<_PlayerVideoAndPopPage> {
-  late VideoPlayerController _videoPlayerController;
+  VideoPlayerController _videoPlayerController;
   bool startedPlaying = false;
 
   @override
