@@ -108,14 +108,16 @@ AVPictureInPictureController *_pipController;
 }
 
 - (void)itemDidPlayToEndTime:(NSNotification*)notification {
-  if (_isLooping) {
-    AVPlayerItem* p = [notification object];
-    [p seekToTime:kCMTimeZero completionHandler:nil];
-  } else {
-    if (_eventSink) {
-      _eventSink(@{@"event" : @"completed"});
+    if (_isLooping) {
+        AVPlayerItem* p = [notification object];
+        [p seekToTime:kCMTimeZero completionHandler:nil];
+    } else {
+        if (_eventSink) {
+            _eventSink(@{@"event" : @"completed"});
+        }
     }
-  }
+    // Remove PIP
+    [self setPictureInPicture:false];
 }
 
 static inline CGFloat radiansToDegrees(CGFloat radians) {
@@ -428,13 +430,25 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 
 - (void)setupPipController {
     if (@available(iOS 9.0, *)) {
+        if (![AVPictureInPictureController isPictureInPictureSupported]) {
+            // Fallback on earlier versions
+            return;
+        }
+
         [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
         [[AVAudioSession sharedInstance] setActive: YES error: nil];
         [[UIApplication sharedApplication] beginReceivingRemoteControlEvents];
-        if (!_pipController && self._playerLayer && [AVPictureInPictureController isPictureInPictureSupported]) {
+        if (_pipController) {
+            _pipController = nil;
+        }
+        if ( self._playerLayer )  {
             _pipController = [[AVPictureInPictureController alloc] initWithPlayerLayer:self._playerLayer];
             _pipController.delegate = self;
         }
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)),
+                       dispatch_get_main_queue(), ^{
+            [self setPictureInPicture:true];
+        });
     } else {
         // Fallback on earlier versions
     }
@@ -452,14 +466,9 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
         //  [self._playerLayer addObserver:self forKeyPath:readyForDisplayKeyPath options:NSKeyValueObservingOptionNew context:nil];
         [vc.view.layer addSublayer:self._playerLayer];
         vc.view.layer.needsDisplayOnBoundsChange = YES;
-        if (@available(iOS 9.0, *)) {
-            _pipController = NULL;
-        }
+
         [self setupPipController];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)),
-        dispatch_get_main_queue(), ^{
-            [self setPictureInPicture:true];
-       });
+
     }
 }
 
@@ -486,12 +495,24 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     if (_eventSink != nil) {
       _eventSink(@{@"event" : @"stoppedPiP"});
     }
+    bool isPlaying = self.player.rate != 0 && self.player.error == nil;
+    if (isPlaying) {
+        // expand PIP button
+    } else {
+        // close PIP button
+        _isPlaying = false;
+        [self updatePlayingState];
+        if (_eventSink != nil) {
+          _eventSink(@{@"event" : @"closeButtonTapPiP"});
+        }
+    }
 }
 
 - (void)pictureInPictureControllerDidStartPictureInPicture:(AVPictureInPictureController *)pictureInPictureController  API_AVAILABLE(ios(9.0)){
     if (_eventSink != nil) {
       _eventSink(@{@"event" : @"startingPiP"});
     }
+    [self updatePlayingState];
 }
 
 - (void)pictureInPictureControllerWillStopPictureInPicture:(AVPictureInPictureController *)pictureInPictureController  API_AVAILABLE(ios(9.0)){
@@ -508,10 +529,6 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 
 - (void)pictureInPictureController:(AVPictureInPictureController *)pictureInPictureController restoreUserInterfaceForPictureInPictureStopWithCompletionHandler:(void (^)(BOOL))completionHandler {
 //  NSAssert(_restoreUserInterfaceForPIPStopCompletionHandler == NULL, @"restoreUserInterfaceForPIPStopCompletionHandler was not called after picture in picture was exited.");
-//  if (self.onRestoreUserInterfaceForPictureInPictureStop) {
-//    self.onRestoreUserInterfaceForPictureInPictureStop(@{});
-//  }
-  //_restoreUserInterfaceForPIPStopCompletionHandler = completionHandler;
   [self setRestoreUserInterfaceForPIPStopCompletionHandler: true];
 }
 #endif
@@ -738,7 +755,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 - (void)setPictureInPicture:(FLTPictureInPictureMessage*)input error:(FlutterError**)error {
   FLTVideoPlayer* player = _players[input.textureId];
     if (input.enabled.intValue == 1) {
-        //[player usePlayerLayer: CGRectMake(0, 0, 340, 290)];
+        // [player usePlayerLayer: CGRectMake(0, 0, 340, 290)];
         [player usePlayerLayer: CGRectMake(input.left.floatValue, input.top.floatValue,
                                            input.width.floatValue, input.height.floatValue)];
     } else {

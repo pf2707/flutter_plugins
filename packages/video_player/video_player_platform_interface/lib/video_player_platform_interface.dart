@@ -1,7 +1,7 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
+// @dart=2.9
 import 'dart:async';
 import 'dart:ui';
 
@@ -45,8 +45,7 @@ abstract class VideoPlayerPlatform {
       try {
         instance._verifyProvidesDefaultImplementations();
       } on NoSuchMethodError catch (_) {
-        throw AssertionError(
-            'Platform interfaces must not be implemented with `implements`');
+        throw AssertionError('Platform interfaces must not be implemented with `implements`');
       }
     }
     _instance = instance;
@@ -121,8 +120,7 @@ abstract class VideoPlayerPlatform {
   }
 
   /// Sets the setPictureInPictureVideo.
-  Future<void> setPictureInPicture(int textureId, bool enabled, double left, double top, double width, double
-  height) {
+  Future<void> setPictureInPicture(int textureId, bool enabled, double left, double top, double width, double height) {
     throw UnimplementedError('setPictureInPictureVideo() has not been implemented.');
   }
 
@@ -258,11 +256,7 @@ class VideoEvent {
   }
 
   @override
-  int get hashCode =>
-      eventType.hashCode ^
-      duration.hashCode ^
-      size.hashCode ^
-      buffered.hashCode;
+  int get hashCode => eventType.hashCode ^ duration.hashCode ^ size.hashCode ^ buffered.hashCode;
 }
 
 /// Type of the event.
@@ -293,6 +287,9 @@ enum VideoEventType {
 
   /// The video stopped to picture in picture.
   stoppedPiP,
+
+  /// Event when picture in picture close button is pressed
+  closeButtonTapPiP,
 }
 
 /// Describes a discrete segment of time within a video using a [start] and
@@ -345,10 +342,7 @@ class DurationRange {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is DurationRange &&
-              runtimeType == other.runtimeType &&
-              start == other.start &&
-              end == other.end;
+      other is DurationRange && runtimeType == other.runtimeType && start == other.start && end == other.end;
 
   @override
   int get hashCode => start.hashCode ^ end.hashCode;
