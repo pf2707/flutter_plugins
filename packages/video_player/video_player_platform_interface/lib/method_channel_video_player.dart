@@ -123,6 +123,8 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
           return VideoEvent(eventType: VideoEventType.startingPiP);
         case 'stoppedPiP':
           return VideoEvent(eventType: VideoEventType.stoppedPiP);
+        case 'expandButtonTapPiP':
+          return VideoEvent(eventType: VideoEventType.expandButtonTapPiP);
         case 'closeButtonTapPiP':
           return VideoEvent(eventType: VideoEventType.closeButtonTapPiP);
         default:

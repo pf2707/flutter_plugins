@@ -474,11 +474,6 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 
 - (void)removePlayerLayer
 {
-    //  if (_loadingRequest != nil) {
-    //    [_loadingRequest finishLoading];
-    //  }
-    //  _requestingCertificate = NO;
-    //  _requestingCertificateErrored = NO;
     [self._playerLayer removeFromSuperlayer];
     //  if (_playerLayerObserverSet) {
     //    [self._playerLayer removeObserver:self forKeyPath:readyForDisplayKeyPath];
@@ -498,6 +493,9 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     bool isPlaying = self.player.rate != 0 && self.player.error == nil;
     if (isPlaying) {
         // expand PIP button
+        if (_eventSink != nil) {
+          _eventSink(@{@"event" : @"expandButtonTapPiP"});
+        }
     } else {
         // close PIP button
         _isPlaying = false;

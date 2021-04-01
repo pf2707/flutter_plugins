@@ -321,8 +321,11 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         case VideoEventType.stoppedPiP:
           value = value.copyWith(isShowingPIP: false);
           break;
+        case VideoEventType.expandButtonTapPiP:
+          value = value.copyWith(isBuffering: false);
+          break;
         case VideoEventType.closeButtonTapPiP:
-          value = value.copyWith(isPlaying: false);
+          value = value.copyWith(isPlaying: false, isBuffering: false);
           break;
         case VideoEventType.unknown:
           break;
@@ -406,7 +409,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       _timer?.cancel();
       _timer = Timer.periodic(
         const Duration(milliseconds: 500),
-        (Timer timer) async {
+            (Timer timer) async {
           if (_isDisposed) {
             return;
           }
@@ -773,11 +776,11 @@ class VideoProgressIndicator extends StatefulWidget {
   /// provided. [allowScrubbing] defaults to false, and [padding] will default
   /// to `top: 5.0`.
   VideoProgressIndicator(
-    this.controller, {
-    VideoProgressColors colors,
-    this.allowScrubbing,
-    this.padding = const EdgeInsets.only(top: 5.0),
-  }) : colors = colors ?? VideoProgressColors();
+      this.controller, {
+        VideoProgressColors colors,
+        this.allowScrubbing,
+        this.padding = const EdgeInsets.only(top: 5.0),
+      }) : colors = colors ?? VideoProgressColors();
 
   /// The [VideoPlayerController] that actually associates a video with this
   /// widget.
@@ -923,9 +926,9 @@ class ClosedCaption extends StatelessWidget {
   Widget build(BuildContext context) {
     final TextStyle effectiveTextStyle = textStyle ??
         DefaultTextStyle.of(context).style.copyWith(
-              fontSize: 36.0,
-              color: Colors.white,
-            );
+          fontSize: 36.0,
+          color: Colors.white,
+        );
 
     if (text == null) {
       return SizedBox.shrink();
