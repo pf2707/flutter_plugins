@@ -139,3 +139,8 @@ and so on.
 To learn about playback speed limitations, see the [`setPlaybackSpeed` method documentation](https://pub.dev/documentation/video_player/latest/video_player/VideoPlayerController/setPlaybackSpeed.html).
 
 Furthermore, see the example app for an example playback speed implementation.
+
+
+PIP demo: 
+
+![ezgif com-gif-maker (1)](https://user-images.githubusercontent.com/19393678/113262274-a30dc500-92fa-11eb-9393-b9793298b90e.gif)
