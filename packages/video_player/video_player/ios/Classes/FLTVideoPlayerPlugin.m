@@ -243,6 +243,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 
   _player = [AVPlayer playerWithPlayerItem:item];
   _player.actionAtItemEnd = AVPlayerActionAtItemEndNone;
+  _player.automaticallyWaitsToMinimizeStalling = false;
 
   [self createVideoOutputAndDisplayLink:frameUpdater];
 
