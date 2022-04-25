@@ -59,6 +59,8 @@ int64_t FLTCMTimeToMillis(CMTime time) {
 
 static void* timeRangeContext = &timeRangeContext;
 static void* statusContext = &statusContext;
+static void *presentationSizeContext = &presentationSizeContext;
+static void *durationContext = &durationContext;
 static void* playbackLikelyToKeepUpContext = &playbackLikelyToKeepUpContext;
 static void* playbackBufferEmptyContext = &playbackBufferEmptyContext;
 static void* playbackBufferFullContext = &playbackBufferFullContext;
@@ -87,6 +89,14 @@ AVPictureInPictureController *_pipController;
          forKeyPath:@"status"
             options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
             context:statusContext];
+  [item addObserver:self
+             forKeyPath:@"presentationSize"
+                options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
+                context:presentationSizeContext];
+  [item addObserver:self
+             forKeyPath:@"duration"
+                options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
+                context:durationContext];
   [item addObserver:self
          forKeyPath:@"playbackLikelyToKeepUp"
             options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
@@ -286,11 +296,20 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
         break;
       case AVPlayerItemStatusReadyToPlay:
         [item addOutput:_videoOutput];
-        [self sendInitialized];
+        [self setupEventSinkIfReadyToPlay];
         [self updatePlayingState];
         break;
     }
-  } else if (context == playbackLikelyToKeepUpContext) {
+  } else if (context == presentationSizeContext || context == durationContext) {
+      AVPlayerItem *item = (AVPlayerItem *)object;
+      if (item.status == AVPlayerItemStatusReadyToPlay) {
+        // Due to an apparent bug, when the player item is ready, it still may not have determined
+        // its presentation size or duration. When these properties are finally set, re-check if
+        // all required properties and instantiate the event sink if it is not already set up.
+        [self setupEventSinkIfReadyToPlay];
+        [self updatePlayingState];
+      }
+    } else if (context == playbackLikelyToKeepUpContext) {
     if ([[_player currentItem] isPlaybackLikelyToKeepUp]) {
       [self updatePlayingState];
       if (_eventSink != nil) {
@@ -320,25 +339,75 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   _displayLink.paused = !_isPlaying;
 }
 
-- (void)sendInitialized {
+//- (void)sendInitialized {
+//  if (_eventSink && !_isInitialized) {
+//    CGSize size = [self.player currentItem].presentationSize;
+//    CGFloat width = size.width;
+//    CGFloat height = size.height;
+//
+//    // The player has not yet initialized.
+//    if (height == CGSizeZero.height && width == CGSizeZero.width) {
+//      return;
+//    }
+//    // The player may be initialized but still needs to determine the duration.
+//    if ([self duration] == 0) {
+//      return;
+//    }
+//
+//    _isInitialized = true;
+//    _eventSink(@{
+//      @"event" : @"initialized",
+//      @"duration" : @([self duration]),
+//      @"width" : @(width),
+//      @"height" : @(height)
+//    });
+//  }
+//}
+
+- (void)setupEventSinkIfReadyToPlay {
   if (_eventSink && !_isInitialized) {
-    CGSize size = [self.player currentItem].presentationSize;
+    AVPlayerItem *currentItem = self.player.currentItem;
+    CGSize size = currentItem.presentationSize;
     CGFloat width = size.width;
     CGFloat height = size.height;
 
-    // The player has not yet initialized.
-    if (height == CGSizeZero.height && width == CGSizeZero.width) {
+    // Wait until tracks are loaded to check duration or if there are any videos.
+    AVAsset *asset = currentItem.asset;
+    if ([asset statusOfValueForKey:@"tracks" error:nil] != AVKeyValueStatusLoaded) {
+      void (^trackCompletionHandler)(void) = ^{
+        if ([asset statusOfValueForKey:@"tracks" error:nil] != AVKeyValueStatusLoaded) {
+          // Cancelled, or something failed.
+          return;
+        }
+        // This completion block will run on an unknown AVFoundation completion
+        // queue thread. Hop back to the main thread to set up event sink.
+        if (!NSThread.isMainThread) {
+          [self performSelector:_cmd onThread:NSThread.mainThread withObject:self waitUntilDone:NO];
+        } else {
+          [self setupEventSinkIfReadyToPlay];
+        }
+      };
+      [asset loadValuesAsynchronouslyForKeys:@[ @"tracks" ]
+                           completionHandler:trackCompletionHandler];
+      return;
+    }
+
+    BOOL hasVideoTracks = [asset tracksWithMediaType:AVMediaTypeVideo].count != 0;
+
+    // The player has not yet initialized when it contains video tracks.
+    if (hasVideoTracks && height == CGSizeZero.height && width == CGSizeZero.width) {
       return;
     }
     // The player may be initialized but still needs to determine the duration.
-    if ([self duration] == 0) {
+    int64_t duration = [self duration];
+    if (duration == 0) {
       return;
     }
 
     _isInitialized = true;
     _eventSink(@{
       @"event" : @"initialized",
-      @"duration" : @([self duration]),
+      @"duration" : @(duration),
       @"width" : @(width),
       @"height" : @(height)
     });
@@ -562,7 +631,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   // This line ensures the 'initialized' event is sent when the event
   // 'AVPlayerItemStatusReadyToPlay' fires before _eventSink is set (this function
   // onListenWithArguments is called)
-  [self sendInitialized];
+  [self setupEventSinkIfReadyToPlay];
   return nil;
 }
 
