@@ -6,7 +6,7 @@ publish_to: none
 dependencies:
   flutter:
     sdk: flutter
-  video_player_1:
+  video_player:
     path: ../
 
 dev_dependencies:
