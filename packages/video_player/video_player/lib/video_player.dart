@@ -277,7 +277,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     }
 
     if (videoPlayerOptions?.mixWithOthers != null) {
-      await _videoPlayerPlatform.setMixWithOthers(videoPlayerOptions?.mixWithOthers);
+      await _videoPlayerPlatform.setMixWithOthers(videoPlayerOptions?.mixWithOthers ?? false);
     }
 
 
@@ -290,44 +290,46 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         return;
       }
 
-      switch (event.eventType) {
-        case VideoEventType.initialized:
-          value = value.copyWith(
-            duration: event.duration,
-            size: event.size,
-          );
-          initializingCompleter.complete(null);
-          _applyLooping();
-          _applyVolume();
-          _applyPlayPause();
-          break;
-        case VideoEventType.completed:
-          value = value.copyWith(isPlaying: false, position: value.duration);
-          _timer?.cancel();
-          break;
-        case VideoEventType.bufferingUpdate:
-          value = value.copyWith(buffered: event.buffered);
-          break;
-        case VideoEventType.bufferingStart:
-          value = value.copyWith(isBuffering: true);
-          break;
-        case VideoEventType.bufferingEnd:
-          value = value.copyWith(isBuffering: false);
-          break;
-        case VideoEventType.startingPiP:
-          value = value.copyWith(isShowingPIP: true);
-          break;
-        case VideoEventType.stoppedPiP:
-          value = value.copyWith(isShowingPIP: false);
-          break;
-        case VideoEventType.expandButtonTapPiP:
-          value = value.copyWith(isBuffering: false);
-          break;
-        case VideoEventType.closeButtonTapPiP:
-          value = value.copyWith(isPlaying: false, isBuffering: false);
-          break;
-        case VideoEventType.unknown:
-          break;
+      if (event.eventType != null) {
+        switch (event.eventType!) {
+          case VideoEventType.initialized:
+            value = value.copyWith(
+              duration: event.duration,
+              size: event.size,
+            );
+            initializingCompleter.complete(null);
+            _applyLooping();
+            _applyVolume();
+            _applyPlayPause();
+            break;
+          case VideoEventType.completed:
+            value = value.copyWith(isPlaying: false, position: value.duration);
+            _timer?.cancel();
+            break;
+          case VideoEventType.bufferingUpdate:
+            value = value.copyWith(buffered: event.buffered);
+            break;
+          case VideoEventType.bufferingStart:
+            value = value.copyWith(isBuffering: true);
+            break;
+          case VideoEventType.bufferingEnd:
+            value = value.copyWith(isBuffering: false);
+            break;
+          case VideoEventType.startingPiP:
+            value = value.copyWith(isShowingPIP: true);
+            break;
+          case VideoEventType.stoppedPiP:
+            value = value.copyWith(isShowingPIP: false);
+            break;
+          case VideoEventType.expandButtonTapPiP:
+            value = value.copyWith(isBuffering: false);
+            break;
+          case VideoEventType.closeButtonTapPiP:
+            value = value.copyWith(isPlaying: false, isBuffering: false);
+            break;
+          case VideoEventType.unknown:
+            break;
+        }
       }
     }
 
@@ -351,7 +353,9 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       }
     }
 
-    _eventSubscription = _videoPlayerPlatform.videoEventsFor(_textureId).listen(eventListener, onError: errorListener);
+    if (_textureId != null) {
+      _eventSubscription = _videoPlayerPlatform.videoEventsFor(_textureId!).listen(eventListener, onError: errorListener);
+    }
     return initializingCompleter.future;
   }
 
@@ -363,7 +367,10 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         _isDisposed = true;
         _timer?.cancel();
         await _eventSubscription?.cancel();
-        await _videoPlayerPlatform.dispose(_textureId);
+
+        if (_textureId != null) {
+          await _videoPlayerPlatform.dispose(_textureId!);
+        }
       }
       _lifeCycleObserver?.dispose();
     }
@@ -395,18 +402,18 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   }
 
   Future<void> _applyLooping() async {
-    if (!value.initialized || _isDisposed) {
+    if (!value.initialized || _isDisposed || _textureId == null) {
       return;
     }
-    await _videoPlayerPlatform.setLooping(_textureId, value.isLooping);
+    await _videoPlayerPlatform.setLooping(_textureId!, value.isLooping);
   }
 
   Future<void> _applyPlayPause() async {
-    if (!value.initialized || _isDisposed) {
+    if (!value.initialized || _isDisposed || _textureId == null) {
       return;
     }
     if (value.isPlaying) {
-      await _videoPlayerPlatform.play(_textureId);
+      await _videoPlayerPlatform.play(_textureId!);
 
       // Cancel previous timer.
       _timer?.cancel();
@@ -430,15 +437,15 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       await _applyPlaybackSpeed();
     } else {
       _timer?.cancel();
-      await _videoPlayerPlatform.pause(_textureId);
+      await _videoPlayerPlatform.pause(_textureId!);
     }
   }
 
   Future<void> _applyVolume() async {
-    if (!value.initialized || _isDisposed) {
+    if (!value.initialized || _isDisposed || _textureId == null) {
       return;
     }
-    await _videoPlayerPlatform.setVolume(_textureId, value.volume);
+    await _videoPlayerPlatform.setVolume(_textureId!, value.volume);
   }
 
   Future<void> _setPictureInPicture(bool enabled, double left, double top, double width, double height) async {
@@ -446,11 +453,11 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       return;
     }
     value = value.copyWith(isShowingPIP: enabled);
-    await _videoPlayerPlatform.setPictureInPicture(_textureId, enabled, left, top, width, height);
+    await _videoPlayerPlatform.setPictureInPicture(_textureId!, enabled, left, top, width, height);
   }
 
   Future<void> _applyPlaybackSpeed() async {
-    if (!value.initialized || _isDisposed) {
+    if (!value.initialized || _isDisposed || _textureId == null) {
       return;
     }
 
@@ -460,17 +467,17 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     if (!value.isPlaying) return;
 
     await _videoPlayerPlatform.setPlaybackSpeed(
-      _textureId,
+      _textureId!,
       value.playbackSpeed,
     );
   }
 
   /// The position in the current video.
   Future<Duration?> get position async {
-    if (_isDisposed) {
+    if (_isDisposed || _textureId == null) {
       return null;
     }
-    return await _videoPlayerPlatform.getPosition(_textureId);
+    return await _videoPlayerPlatform.getPosition(_textureId!);
   }
 
   /// Sets the video's current timestamp to be at [moment]. The next
@@ -487,7 +494,9 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     } else if (position < const Duration()) {
       position = const Duration();
     }
-    await _videoPlayerPlatform.seekTo(_textureId, position);
+    if (_textureId != null) {
+      await _videoPlayerPlatform.seekTo(_textureId!, position);
+    }
     _updatePosition(position);
   }
 
@@ -675,7 +684,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return _textureId == null || !_enabledVideo ? Container() : _videoPlayerPlatform.buildView(_textureId);
+    return _textureId == null || !_enabledVideo ? Container() : _videoPlayerPlatform.buildView(_textureId!);
   }
 }
 
@@ -790,6 +799,7 @@ class _VideoScrubberState extends State<_VideoScrubber> {
 ///
 /// [padding] allows to specify some extra padding around the progress indicator
 /// that will also detect the gestures.
+// ignore: must_be_immutable
 class VideoProgressIndicator extends StatefulWidget {
   /// Construct an instance that displays the play/buffering status of the video
   /// controlled by [controller].
@@ -872,7 +882,7 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
 
       int maxBuffering = 0;
       for (DurationRange range in controller!.value.buffered!) {
-        final int end = range.end.inMilliseconds;
+        final end = range.end?.inMilliseconds ?? 0;
         if (end > maxBuffering) {
           maxBuffering = end;
         }

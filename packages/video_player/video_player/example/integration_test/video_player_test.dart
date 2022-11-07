@@ -4,7 +4,6 @@
 //
 //// TODO(amirh): Remove this once flutter_driver supports null safety.
 //// https://github.com/flutter/flutter/issues/71379
-//// @dart = 2.9
 //import 'dart:async';
 //
 //import 'package:flutter/foundation.dart';
