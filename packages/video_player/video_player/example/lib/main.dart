@@ -122,22 +122,22 @@ class _ExampleCard extends StatelessWidget {
             leading: const Icon(Icons.airline_seat_flat_angled),
             title: Text(title),
           ),
-          ButtonBar(
-            children: <Widget>[
-              FlatButton(
-                child: const Text('BUY TICKETS'),
-                onPressed: () {
-                  /* ... */
-                },
-              ),
-              FlatButton(
-                child: const Text('SELL TICKETS'),
-                onPressed: () {
-                  /* ... */
-                },
-              ),
-            ],
-          ),
+          // ButtonBar(
+          //   children: <Widget>[
+          //     FlatButton(
+          //       child: const Text('BUY TICKETS'),
+          //       onPressed: () {
+          //         /* ... */
+          //       },
+          //     ),
+          //     FlatButton(
+          //       child: const Text('SELL TICKETS'),
+          //       onPressed: () {
+          //         /* ... */
+          //       },
+          //     ),
+          //   ],
+          // ),
         ],
       ),
     );

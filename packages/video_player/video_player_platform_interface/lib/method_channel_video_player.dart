@@ -1,7 +1,6 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// @dart=2.9
 import 'dart:async';
 import 'dart:ui';
 
@@ -13,7 +12,7 @@ import 'video_player_platform_interface.dart';
 
 /// An implementation of [VideoPlayerPlatform] that uses method channels.
 class MethodChannelVideoPlayer extends VideoPlayerPlatform {
-  VideoPlayerApi _api = VideoPlayerApi();
+  final _api = VideoPlayerApi();
 
   @override
   Future<void> init() {
@@ -43,8 +42,8 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
         break;
     }
 
-    TextureMessage response = await _api.create(message);
-    return response.textureId;
+    var response = await _api.create(message);
+    return response?.textureId ?? 0;
   }
 
   @override
@@ -89,8 +88,8 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
 
   @override
   Future<Duration> getPosition(int textureId) async {
-    PositionMessage response = await _api.position(TextureMessage()..textureId = textureId);
-    return Duration(milliseconds: response.position);
+    var response = await _api.position(TextureMessage()..textureId = textureId);
+    return Duration(milliseconds: response?.position ?? 0);
   }
 
   @override

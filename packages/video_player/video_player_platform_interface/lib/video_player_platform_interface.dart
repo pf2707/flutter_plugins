@@ -1,7 +1,6 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// @dart=2.9
 import 'dart:async';
 import 'dart:ui';
 
@@ -161,24 +160,24 @@ class DataSource {
   ///
   /// This has nothing to do with the video's file type. It's just the place
   /// from which the video is fetched from.
-  final DataSourceType sourceType;
+  DataSourceType? sourceType;
 
   /// The URI to the video file.
   ///
   /// This will be in different formats depending on the [DataSourceType] of
   /// the original video.
-  final String uri;
+  String? uri;
 
   /// **Android only**. Will override the platform's generic file format
   /// detection with whatever is set here.
-  final VideoFormat formatHint;
+  VideoFormat? formatHint;
 
   /// The name of the asset. Only set for [DataSourceType.asset] videos.
-  final String asset;
+  String? asset;
 
   /// The package that the asset was loaded from. Only set for
   /// [DataSourceType.asset] videos.
-  final String package;
+  String? package;
 }
 
 /// The way in which the video was originally loaded.
@@ -227,22 +226,22 @@ class VideoEvent {
   });
 
   /// The type of the event.
-  final VideoEventType eventType;
+  VideoEventType? eventType;
 
   /// Duration of the video.
   ///
   /// Only used if [eventType] is [VideoEventType.initialized].
-  final Duration duration;
+  Duration? duration;
 
   /// Size of the video.
   ///
   /// Only used if [eventType] is [VideoEventType.initialized].
-  final Size size;
+  Size? size;
 
   /// Buffered parts of the video.
   ///
   /// Only used if [eventType] is [VideoEventType.bufferingUpdate].
-  final List<DurationRange> buffered;
+  List<DurationRange>? buffered;
 
   @override
   bool operator ==(Object other) {
