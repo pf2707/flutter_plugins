@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:meta/meta.dart' show required, visibleForTesting;
 
 import 'method_channel_video_player.dart';
 
@@ -306,7 +304,7 @@ class DurationRange {
   ///
   /// For example, if the entire video is 4 minutes long and the range is from
   /// 1:00-2:00, this should be a `Duration` of one minute.
-  final Duration start;
+  Duration? start;
 
   /// The end of the segment described as a duration relative to the beginning of
   /// the entire video. This is expected to be non-null and longer than or equal
@@ -314,7 +312,7 @@ class DurationRange {
   ///
   /// For example, if the entire video is 4 minutes long and the range is from
   /// 1:00-2:00, this should be a `Duration` of two minutes.
-  final Duration end;
+  Duration? end;
 
   /// Assumes that [duration] is the total length of the video that this
   /// DurationRange is a segment form. It returns the percentage that [start] is
@@ -324,7 +322,7 @@ class DurationRange {
   /// a duration of one minute, this will return `0.25` since the DurationRange
   /// starts 25% of the way through the video's total length.
   double startFraction(Duration duration) {
-    return start.inMilliseconds / duration.inMilliseconds;
+    return (start?.inMilliseconds ?? 0) / duration.inMilliseconds;
   }
 
   /// Assumes that [duration] is the total length of the video that this
@@ -335,7 +333,7 @@ class DurationRange {
   /// duration of two minutes, this will return `0.5` since the DurationRange
   /// ends 50% of the way through the video's total length.
   double endFraction(Duration duration) {
-    return end.inMilliseconds / duration.inMilliseconds;
+    return (end?.inMilliseconds ?? 0) / duration.inMilliseconds;
   }
 
   @override
@@ -354,7 +352,7 @@ class DurationRange {
 class VideoPlayerOptions {
   /// Set this to true to mix the video players audio with other audio sources.
   /// The default value is false
-  final bool mixWithOthers;
+  bool? mixWithOthers;
 
   /// set additional optional player settings
   VideoPlayerOptions({this.mixWithOthers = false});
